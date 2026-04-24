@@ -1,0 +1,41 @@
+@prefix ex:   <http://example.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+# ============================================================
+# Starter Ontology Template for Lettria Perseus
+# ============================================================
+# Uncomment and customize the entity types (classes) and
+# relationship types (properties) below, or add your own.
+#
+# Usage:
+#   /perseus-ontology Person Organization Location
+#   — will auto-generate classes from this template
+#
+#   /perseus-ontology ./my-ontology.ttl
+#   — will upload your file directly
+# ============================================================
+
+# --- Entity types (classes) ---
+# ex:Person         a rdfs:Class .
+# ex:Organization   a rdfs:Class .
+# ex:Location       a rdfs:Class .
+# ex:Event          a rdfs:Class .
+# ex:Product        a rdfs:Class .
+
+# --- Relationship types (properties) ---
+# ex:worksAt        a rdf:Property ;
+#                   rdfs:domain ex:Person ;
+#                   rdfs:range  ex:Organization .
+#
+# ex:locatedIn      a rdf:Property ;
+#                   rdfs:domain ex:Organization ;
+#                   rdfs:range  ex:Location .
+#
+# ex:participatedIn a rdf:Property ;
+#                   rdfs:domain ex:Person ;
+#                   rdfs:range  ex:Event .
+#
+# ex:produces       a rdf:Property ;
+#                   rdfs:domain ex:Organization ;
+#                   rdfs:range  ex:Product .
