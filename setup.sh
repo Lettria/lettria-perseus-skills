@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Lettria Perseus — one-command setup for Claude Code
-# Registers the MCP server and installs the skills.
+# Registers the MCP server(s) and installs the skills.
 
 # --- Colors (disabled if not a terminal) ---
 if [ -t 1 ]; then
@@ -21,12 +21,45 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="$HOME/.claude/skills"
 SKILL_NAMES=("perseus" "perseus-ontology" "perseus-neo4j" "perseus-falkordb")
 
+# --- Helper: register an MCP server (handles "already exists") ---
+register_mcp() {
+  local NAME="$1"
+  shift
+  local MCP_OUTPUT=""
+
+  if MCP_OUTPUT=$(claude mcp add "$NAME" -s user "$@" 2>&1); then
+    echo -e "  ${GREEN}$NAME — registered successfully.${RESET}"
+    return 0
+  fi
+
+  if echo "$MCP_OUTPUT" | grep -qi "already exists"; then
+    echo -e "  ${YELLOW}$NAME — already registered.${RESET}"
+    read -rp "  Overwrite existing configuration? (y/N): " OVERWRITE
+    if [[ "$OVERWRITE" =~ ^[Yy]$ ]]; then
+      claude mcp remove "$NAME" -s user 2>/dev/null || true
+      if claude mcp add "$NAME" -s user "$@" 2>&1; then
+        echo -e "  ${GREEN}$NAME — re-registered successfully.${RESET}"
+        return 0
+      else
+        echo -e "  ${RED}$NAME — failed to re-register.${RESET}"
+        return 1
+      fi
+    else
+      echo -e "  ${GREEN}$NAME — keeping existing configuration.${RESET}"
+      return 0
+    fi
+  fi
+
+  echo -e "  ${RED}$NAME — registration failed.${RESET}"
+  return 1
+}
+
 echo ""
 echo -e "${BOLD}=== Lettria Perseus Setup ===${RESET}"
 echo ""
 
 # --- 1. Collect API key ---
-echo -e "${BLUE}[Step 1/3]${RESET} API Key"
+echo -e "${BLUE}[Step 1/4]${RESET} API Key"
 if [ -n "${PERSEUS_API_KEY:-}" ]; then
   echo -e "  Using PERSEUS_API_KEY from environment."
   API_KEY="$PERSEUS_API_KEY"
@@ -41,10 +74,15 @@ fi
 
 # --- 2. Optional: database credentials ---
 echo ""
-echo -e "${BLUE}[Step 2/3]${RESET} Database connections (optional)"
+echo -e "${BLUE}[Step 2/4]${RESET} Database connections (optional)"
 
-read -rp "  Set up Neo4j connection? (y/N): " SETUP_NEO4J
+# Neo4j
+SETUP_NEO4J="n"
 NEO4J_ARGS=""
+NEO4J_URI=""
+NEO4J_USER=""
+NEO4J_PASSWORD=""
+read -rp "  Set up Neo4j connection? (y/N): " SETUP_NEO4J
 if [[ "$SETUP_NEO4J" =~ ^[Yy]$ ]]; then
   read -rp "    NEO4J_URI (default: bolt://localhost:7687): " NEO4J_URI
   NEO4J_URI="${NEO4J_URI:-bolt://localhost:7687}"
@@ -58,9 +96,16 @@ else
   echo -e "  ${YELLOW}Skipping Neo4j.${RESET}"
 fi
 
+# FalkorDB
+SETUP_FALKOR="n"
+FALKOR_ARGS=""
+FALKORDB_HOST=""
+FALKORDB_PORT=""
+FALKORDB_USERNAME=""
+FALKORDB_PASSWORD=""
+FALKORDB_GRAPH_NAME=""
 echo ""
 read -rp "  Set up FalkorDB connection? (y/N): " SETUP_FALKOR
-FALKOR_ARGS=""
 if [[ "$SETUP_FALKOR" =~ ^[Yy]$ ]]; then
   read -rp "    FALKORDB_HOST (default: localhost): " FALKORDB_HOST
   FALKORDB_HOST="${FALKORDB_HOST:-localhost}"
@@ -78,58 +123,61 @@ else
   echo -e "  ${YELLOW}Skipping FalkorDB.${RESET}"
 fi
 
-# --- 3. Register MCP server ---
+# --- 3. Register MCP servers ---
 echo ""
-echo -e "${BLUE}[Step 3/3]${RESET} Registering MCP server and installing skills"
+echo -e "${BLUE}[Step 3/4]${RESET} Registering MCP servers"
 echo ""
-echo "  Registering MCP server with Claude Code..."
 
-# Check if the server already exists
-MCP_OUTPUT=""
+# 3a. Perseus MCP server (write — build/interlink/push graphs)
 # shellcheck disable=SC2086
-if MCP_OUTPUT=$(claude mcp add lettria-perseus \
+if ! register_mcp lettria-perseus \
   -e PERSEUS_API_KEY="$API_KEY" \
   $NEO4J_ARGS \
   $FALKOR_ARGS \
-  -- uvx --from "$REPO" lettria-perseus-mcp 2>&1); then
-  echo -e "  ${GREEN}MCP server registered successfully.${RESET}"
-else
-  if echo "$MCP_OUTPUT" | grep -qi "already exists"; then
-    echo -e "  ${YELLOW}MCP server already registered.${RESET}"
-    read -rp "  Overwrite existing configuration? (y/N): " OVERWRITE
-    if [[ "$OVERWRITE" =~ ^[Yy]$ ]]; then
-      claude mcp remove lettria-perseus 2>/dev/null || true
-      # shellcheck disable=SC2086
-      if claude mcp add lettria-perseus \
-        -e PERSEUS_API_KEY="$API_KEY" \
-        $NEO4J_ARGS \
-        $FALKOR_ARGS \
-        -- uvx --from "$REPO" lettria-perseus-mcp; then
-        echo -e "  ${GREEN}MCP server re-registered successfully.${RESET}"
-      else
-        echo ""
-        echo -e "${RED}Setup failed: could not register MCP server.${RESET}"
-        exit 1
-      fi
-    else
-      echo -e "  ${GREEN}Keeping existing MCP server configuration.${RESET}"
-    fi
-  else
-    echo ""
-    echo -e "${RED}Setup failed: could not register MCP server.${RESET}"
-    echo ""
-    echo "Make sure the following are installed:"
-    echo "  1. Claude Code CLI — install with: npm install -g @anthropic-ai/claude-code"
-    echo "     Then verify with: claude --version"
-    echo "  2. uv (Python package manager) — install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
-    echo "     Then verify with: uv --version"
-    echo ""
-    echo "For more info see: https://docs.anthropic.com/en/docs/claude-code"
-    exit 1
-  fi
+  -- uvx --from "$REPO" lettria-perseus-mcp; then
+  echo ""
+  echo -e "${RED}Setup failed: could not register Perseus MCP server.${RESET}"
+  echo ""
+  echo "Make sure the following are installed:"
+  echo "  1. Claude Code CLI — install with: npm install -g @anthropic-ai/claude-code"
+  echo "     Then verify with: claude --version"
+  echo "  2. uv (Python package manager) — install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
+  echo "     Then verify with: uv --version"
+  echo ""
+  echo "For more info see: https://docs.anthropic.com/en/docs/claude-code"
+  exit 1
+fi
+
+# 3b. Neo4j MCP server (read — query via Cypher)
+if [[ "$SETUP_NEO4J" =~ ^[Yy]$ ]]; then
+  echo ""
+  echo "  Registering Neo4j query server (read access)..."
+  # shellcheck disable=SC2086
+  register_mcp neo4j-cypher \
+    -e NEO4J_URI="$NEO4J_URI" \
+    -e NEO4J_USERNAME="$NEO4J_USER" \
+    -e NEO4J_PASSWORD="$NEO4J_PASSWORD" \
+    -e NEO4J_DATABASE=neo4j \
+    -- uvx mcp-neo4j-cypher || \
+    echo -e "  ${YELLOW}Neo4j query server registration failed — you can still push graphs, but querying Neo4j from Claude won't be available.${RESET}"
+fi
+
+# 3c. FalkorDB MCP server (read — query via Cypher)
+if [[ "$SETUP_FALKOR" =~ ^[Yy]$ ]]; then
+  echo ""
+  echo "  Registering FalkorDB query server (read access)..."
+  register_mcp falkordb \
+    -e FALKORDB_HOST="$FALKORDB_HOST" \
+    -e FALKORDB_PORT="$FALKORDB_PORT" \
+    -e FALKORDB_USERNAME="$FALKORDB_USERNAME" \
+    -e FALKORDB_PASSWORD="$FALKORDB_PASSWORD" \
+    -- npx -y @falkordb/mcpserver || \
+    echo -e "  ${YELLOW}FalkorDB query server registration failed — you can still push graphs, but querying FalkorDB from Claude won't be available.${RESET}"
 fi
 
 # --- 4. Install skills via symlink ---
+echo ""
+echo -e "${BLUE}[Step 4/4]${RESET} Installing skills"
 echo ""
 echo "  Installing skills to $SKILLS_DIR ..."
 mkdir -p "$SKILLS_DIR"
@@ -166,7 +214,13 @@ fi
 # --- Done ---
 echo ""
 echo -e "${BOLD}${GREEN}=== Setup complete ===${RESET}"
-echo -e "  MCP server: ${GREEN}registered${RESET}"
+echo -e "  Perseus MCP server: ${GREEN}registered${RESET} (build/push graphs)"
+if [[ "$SETUP_NEO4J" =~ ^[Yy]$ ]]; then
+  echo -e "  Neo4j query server: ${GREEN}registered${RESET} (read via Cypher)"
+fi
+if [[ "$SETUP_FALKOR" =~ ^[Yy]$ ]]; then
+  echo -e "  FalkorDB query server: ${GREEN}registered${RESET} (read via Cypher)"
+fi
 echo -e "  Skills installed: ${GREEN}$INSTALLED${RESET} (skipped: $SKIPPED)"
 echo ""
 echo "Open Claude Code and type /perseus to get started."

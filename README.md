@@ -98,7 +98,7 @@ Requires `FALKORDB_HOST`, `FALKORDB_PORT`, `FALKORDB_USERNAME`, `FALKORDB_PASSWO
 The Lettria Perseus MCP server must be registered in your Claude Code config before these skills can work:
 
 ```bash
-claude mcp add lettria-perseus -e PERSEUS_API_KEY=sk-... -- \
+claude mcp add lettria-perseus -s user -e PERSEUS_API_KEY=sk-... -- \
   uvx --from git+https://github.com/jalakoo/lettria-perseus-mcp.git lettria-perseus-mcp
 ```
 
@@ -106,7 +106,7 @@ For database skills, add the relevant env vars:
 
 ```bash
 # Neo4j
-claude mcp add lettria-perseus \
+claude mcp add lettria-perseus -s user \
   -e PERSEUS_API_KEY=sk-... \
   -e NEO4J_URI=bolt://localhost:7687 \
   -e NEO4J_USER=neo4j \
@@ -114,7 +114,7 @@ claude mcp add lettria-perseus \
   -- uvx --from git+https://github.com/jalakoo/lettria-perseus-mcp.git lettria-perseus-mcp
 
 # FalkorDB
-claude mcp add lettria-perseus \
+claude mcp add lettria-perseus -s user \
   -e PERSEUS_API_KEY=sk-... \
   -e FALKORDB_HOST=localhost \
   -e FALKORDB_PORT=6379 \
@@ -138,17 +138,37 @@ cd lettria-perseus-skills
 ./setup.sh
 ```
 
-The script will prompt for your Perseus API key and optionally collect Neo4j / FalkorDB credentials.
+The script will prompt for your Perseus API key and optionally collect Neo4j / FalkorDB credentials. If you configure a database, the script also registers the official [Neo4j MCP server](https://github.com/neo4j-contrib/mcp-neo4j) or [FalkorDB MCP server](https://github.com/FalkorDB/FalkorDB-MCPServer) so Claude can **read back** data via Cypher queries.
 
 ### Manual setup
 
 If you prefer to run the steps yourself:
 
-**Step 1 — Register the MCP server** (see [Prerequisites](#prerequisites) for database-specific env vars):
+**Step 1a — Register the Perseus MCP server** (see [Prerequisites](#prerequisites) for database-specific env vars):
 
 ```bash
-claude mcp add lettria-perseus -e PERSEUS_API_KEY=sk-... -- \
+claude mcp add lettria-perseus -s user -e PERSEUS_API_KEY=sk-... -- \
   uvx --from git+https://github.com/jalakoo/lettria-perseus-mcp.git lettria-perseus-mcp
+```
+
+**Step 1b — (Optional) Register database query servers** for read access:
+
+```bash
+# Neo4j — query via Cypher
+claude mcp add neo4j-cypher -s user \
+  -e NEO4J_URI=bolt://localhost:7687 \
+  -e NEO4J_USERNAME=neo4j \
+  -e NEO4J_PASSWORD=password \
+  -e NEO4J_DATABASE=neo4j \
+  -- uvx mcp-neo4j-cypher
+
+# FalkorDB — query via Cypher
+claude mcp add falkordb -s user \
+  -e FALKORDB_HOST=localhost \
+  -e FALKORDB_PORT=6379 \
+  -e FALKORDB_USERNAME=default \
+  -e FALKORDB_PASSWORD=password \
+  -- npx -y @falkordb/mcpserver
 ```
 
 **Step 2 — Install the skills** by symlinking into `~/.claude/skills/`:
