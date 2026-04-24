@@ -11,8 +11,8 @@ Claude Code skills that orchestrate the [Lettria Perseus MCP server](https://git
   - [/perseus-falkordb — Push to FalkorDB](#perseus-falkordb--push-to-falkordb)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-  - [Via npx skills (recommended)](#via-npx-skills-recommended)
-  - [Via manual symlink](#via-manual-symlink)
+  - [Quick setup (recommended)](#quick-setup-recommended)
+  - [Manual setup](#manual-setup)
 - [Usage Examples](#usage-examples)
 - [Project Structure](#project-structure)
 - [Tool Reference](#tool-reference)
@@ -90,6 +90,11 @@ Requires `FALKORDB_HOST`, `FALKORDB_PORT`, `FALKORDB_USERNAME`, `FALKORDB_PASSWO
 
 ## Prerequisites
 
+**Required tools:**
+
+- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) — install with `npm install -g @anthropic-ai/claude-code`
+- [uv](https://docs.astral.sh/uv/) (Python package manager) — install with `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
 The Lettria Perseus MCP server must be registered in your Claude Code config before these skills can work:
 
 ```bash
@@ -146,17 +151,7 @@ claude mcp add lettria-perseus -e PERSEUS_API_KEY=sk-... -- \
   uvx --from git+https://github.com/jalakoo/lettria-perseus-mcp.git lettria-perseus-mcp
 ```
 
-**Step 2 — Install the skills** via npx:
-
-```bash
-# Install globally (available in all projects)
-npx skills add jalakoo/lettria-perseus-skills -g
-
-# Or project-level (available only in current project)
-npx skills add jalakoo/lettria-perseus-skills
-```
-
-Or via manual symlink:
+**Step 2 — Install the skills** by symlinking into `~/.claude/skills/`:
 
 ```bash
 git clone https://github.com/jalakoo/lettria-perseus-skills.git
