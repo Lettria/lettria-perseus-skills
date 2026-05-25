@@ -1,6 +1,6 @@
 # Lettria Perseus Skills for Claude Code
 
-Claude Code skills that orchestrate the [Lettria Perseus MCP server](https://github.com/jalakoo/lettria-perseus-mcp) into guided, high-level workflows. Type a slash command, and Claude chains the right MCP tools in the right order.
+Claude Code skills that orchestrate the [Lettria Perseus MCP server](https://github.com/Lettria/lettria-perseus-mcp) into guided, high-level workflows. Type a slash command, and Claude chains the right MCP tools in the right order.
 
 ## Table of Contents
 
@@ -12,6 +12,7 @@ Claude Code skills that orchestrate the [Lettria Perseus MCP server](https://git
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
   - [Quick setup (recommended)](#quick-setup-recommended)
+  - [Install skills with npx](#install-skills-with-npx)
   - [Manual setup](#manual-setup)
 - [Usage Examples](#usage-examples)
 - [Project Structure](#project-structure)
@@ -99,7 +100,7 @@ The Lettria Perseus MCP server must be registered in your Claude Code config bef
 
 ```bash
 claude mcp add lettria-perseus -s user -e PERSEUS_API_KEY=sk-... -- \
-  uvx --from git+https://github.com/jalakoo/lettria-perseus-mcp.git lettria-perseus-mcp
+  uvx --from git+https://github.com/Lettria/lettria-perseus-mcp.git lettria-perseus-mcp
 ```
 
 For database skills, add the relevant env vars:
@@ -111,7 +112,7 @@ claude mcp add lettria-perseus -s user \
   -e NEO4J_URI=bolt://localhost:7687 \
   -e NEO4J_USER=neo4j \
   -e NEO4J_PASSWORD=password \
-  -- uvx --from git+https://github.com/jalakoo/lettria-perseus-mcp.git lettria-perseus-mcp
+  -- uvx --from git+https://github.com/Lettria/lettria-perseus-mcp.git lettria-perseus-mcp
 
 # FalkorDB
 claude mcp add lettria-perseus -s user \
@@ -121,7 +122,7 @@ claude mcp add lettria-perseus -s user \
   -e FALKORDB_USERNAME=default \
   -e FALKORDB_PASSWORD=password \
   -e FALKORDB_GRAPH_NAME=perseus \
-  -- uvx --from git+https://github.com/jalakoo/lettria-perseus-mcp.git lettria-perseus-mcp
+  -- uvx --from git+https://github.com/Lettria/lettria-perseus-mcp.git lettria-perseus-mcp
 ```
 
 ---
@@ -133,12 +134,26 @@ claude mcp add lettria-perseus -s user \
 A single script that registers the MCP server **and** installs the skills:
 
 ```bash
-git clone https://github.com/jalakoo/lettria-perseus-skills.git
+git clone https://github.com/Lettria/lettria-perseus-skills.git
 cd lettria-perseus-skills
 ./setup.sh
 ```
 
 The script will prompt for your Perseus API key and optionally collect Neo4j / FalkorDB credentials. If you configure a database, the script also registers the official [Neo4j MCP server](https://github.com/neo4j-contrib/mcp-neo4j) or [FalkorDB MCP server](https://github.com/FalkorDB/FalkorDB-MCPServer) so Claude can **read back** data via Cypher queries.
+
+### Install skills with npx
+
+If you only need the skills (and will register the MCP server yourself — see [Prerequisites](#prerequisites)), install them straight from the repo:
+
+```bash
+# Globally, for use in any project
+npx skills add Lettria/lettria-perseus-skills -g
+
+# Or project-level (into ./.claude/skills/)
+npx skills add Lettria/lettria-perseus-skills
+```
+
+> **Note:** `npx skills add` installs the four skills only — it does **not** register the Perseus MCP server. Without the `lettria-perseus` MCP server registered (see [Prerequisites](#prerequisites)), the skills will have no tools to call. Use the [quick setup](#quick-setup-recommended) script if you want both in one step.
 
 ### Manual setup
 
@@ -148,7 +163,7 @@ If you prefer to run the steps yourself:
 
 ```bash
 claude mcp add lettria-perseus -s user -e PERSEUS_API_KEY=sk-... -- \
-  uvx --from git+https://github.com/jalakoo/lettria-perseus-mcp.git lettria-perseus-mcp
+  uvx --from git+https://github.com/Lettria/lettria-perseus-mcp.git lettria-perseus-mcp
 ```
 
 **Step 1b — (Optional) Register database query servers** for read access:
@@ -174,7 +189,7 @@ claude mcp add falkordb -s user \
 **Step 2 — Install the skills** by symlinking into `~/.claude/skills/`:
 
 ```bash
-git clone https://github.com/jalakoo/lettria-perseus-skills.git
+git clone https://github.com/Lettria/lettria-perseus-skills.git
 
 ln -s /path/to/lettria-perseus-skills/perseus ~/.claude/skills/perseus
 ln -s /path/to/lettria-perseus-skills/perseus-ontology ~/.claude/skills/perseus-ontology

@@ -16,7 +16,7 @@ else
   RED='' GREEN='' YELLOW='' BLUE='' BOLD='' RESET=''
 fi
 
-REPO="git+https://github.com/jalakoo/lettria-perseus-mcp.git"
+REPO="git+https://github.com/Lettria/lettria-perseus-mcp.git"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="$HOME/.claude/skills"
 SKILL_NAMES=("perseus" "perseus-ontology" "perseus-neo4j" "perseus-falkordb")
