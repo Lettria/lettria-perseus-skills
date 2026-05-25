@@ -16,7 +16,7 @@ else
   RED='' GREEN='' YELLOW='' BLUE='' BOLD='' RESET=''
 fi
 
-REPO="git+https://github.com/Lettria/lettria-perseus-mcp.git"
+REPO="git+https://github.com/Lettria/perseus-mcp.git"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="$HOME/.claude/skills"
 SKILL_NAMES=("perseus" "perseus-ontology" "perseus-neo4j" "perseus-falkordb")
@@ -207,7 +207,7 @@ done
 if [ "$INSTALLED" -eq 0 ]; then
   echo ""
   echo -e "${RED}Setup failed: no skills were installed.${RESET}"
-  echo "Make sure you are running this script from the lettria-perseus-skills directory."
+  echo "Make sure you are running this script from the perseus-skills directory."
   exit 1
 fi
 

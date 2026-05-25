@@ -1,6 +1,6 @@
 # Lettria Perseus Skills for Claude Code
 
-Claude Code skills that orchestrate the [Lettria Perseus MCP server](https://github.com/Lettria/lettria-perseus-mcp) into guided, high-level workflows. Type a slash command, and Claude chains the right MCP tools in the right order.
+Claude Code skills that orchestrate the [Lettria Perseus MCP server](https://github.com/Lettria/perseus-mcp) into guided, high-level workflows. Type a slash command, and Claude chains the right MCP tools in the right order.
 
 ## Table of Contents
 
@@ -100,7 +100,7 @@ The Lettria Perseus MCP server must be registered in your Claude Code config bef
 
 ```bash
 claude mcp add lettria-perseus -s user -e PERSEUS_API_KEY=sk-... -- \
-  uvx --from git+https://github.com/Lettria/lettria-perseus-mcp.git lettria-perseus-mcp
+  uvx --from git+https://github.com/Lettria/perseus-mcp.git lettria-perseus-mcp
 ```
 
 For database skills, add the relevant env vars:
@@ -112,7 +112,7 @@ claude mcp add lettria-perseus -s user \
   -e NEO4J_URI=bolt://localhost:7687 \
   -e NEO4J_USER=neo4j \
   -e NEO4J_PASSWORD=password \
-  -- uvx --from git+https://github.com/Lettria/lettria-perseus-mcp.git lettria-perseus-mcp
+  -- uvx --from git+https://github.com/Lettria/perseus-mcp.git lettria-perseus-mcp
 
 # FalkorDB
 claude mcp add lettria-perseus -s user \
@@ -122,7 +122,7 @@ claude mcp add lettria-perseus -s user \
   -e FALKORDB_USERNAME=default \
   -e FALKORDB_PASSWORD=password \
   -e FALKORDB_GRAPH_NAME=perseus \
-  -- uvx --from git+https://github.com/Lettria/lettria-perseus-mcp.git lettria-perseus-mcp
+  -- uvx --from git+https://github.com/Lettria/perseus-mcp.git lettria-perseus-mcp
 ```
 
 ---
@@ -134,8 +134,8 @@ claude mcp add lettria-perseus -s user \
 A single script that registers the MCP server **and** installs the skills:
 
 ```bash
-git clone https://github.com/Lettria/lettria-perseus-skills.git
-cd lettria-perseus-skills
+git clone https://github.com/Lettria/perseus-skills.git
+cd perseus-skills
 ./setup.sh
 ```
 
@@ -147,10 +147,10 @@ If you only need the skills (and will register the MCP server yourself — see [
 
 ```bash
 # Globally, for use in any project
-npx skills add Lettria/lettria-perseus-skills -g
+npx skills add Lettria/perseus-skills -g
 
 # Or project-level (into ./.claude/skills/)
-npx skills add Lettria/lettria-perseus-skills
+npx skills add Lettria/perseus-skills
 ```
 
 > **Note:** `npx skills add` installs the four skills only — it does **not** register the Perseus MCP server. Without the `lettria-perseus` MCP server registered (see [Prerequisites](#prerequisites)), the skills will have no tools to call. Use the [quick setup](#quick-setup-recommended) script if you want both in one step.
@@ -163,7 +163,7 @@ If you prefer to run the steps yourself:
 
 ```bash
 claude mcp add lettria-perseus -s user -e PERSEUS_API_KEY=sk-... -- \
-  uvx --from git+https://github.com/Lettria/lettria-perseus-mcp.git lettria-perseus-mcp
+  uvx --from git+https://github.com/Lettria/perseus-mcp.git lettria-perseus-mcp
 ```
 
 **Step 1b — (Optional) Register database query servers** for read access:
@@ -189,12 +189,12 @@ claude mcp add falkordb -s user \
 **Step 2 — Install the skills** by symlinking into `~/.claude/skills/`:
 
 ```bash
-git clone https://github.com/Lettria/lettria-perseus-skills.git
+git clone https://github.com/Lettria/perseus-skills.git
 
-ln -s /path/to/lettria-perseus-skills/perseus ~/.claude/skills/perseus
-ln -s /path/to/lettria-perseus-skills/perseus-ontology ~/.claude/skills/perseus-ontology
-ln -s /path/to/lettria-perseus-skills/perseus-neo4j ~/.claude/skills/perseus-neo4j
-ln -s /path/to/lettria-perseus-skills/perseus-falkordb ~/.claude/skills/perseus-falkordb
+ln -s /path/to/perseus-skills/perseus ~/.claude/skills/perseus
+ln -s /path/to/perseus-skills/perseus-ontology ~/.claude/skills/perseus-ontology
+ln -s /path/to/perseus-skills/perseus-neo4j ~/.claude/skills/perseus-neo4j
+ln -s /path/to/perseus-skills/perseus-falkordb ~/.claude/skills/perseus-falkordb
 ```
 
 After installation, the skills appear in `/help` and Claude can auto-invoke them based on context.
@@ -230,7 +230,7 @@ Claude builds, interlinks, confirms, pushes, and suggests Cypher queries.
 ## Project Structure
 
 ```
-lettria-perseus-skills/
+perseus-skills/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
